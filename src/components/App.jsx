@@ -22,49 +22,15 @@ export const App = () => {
     modalImageUrl: '',
   });
 
+  const [prevSearchQuery, setPrevSearchQuery] = useState('');
+  const [prevPage, setPrevPage] = useState(1);
+
   const handleSearch = query => {
     setSearchQuery(query);
     setPage(1);
     setImages([]);
     setTotalImages(0);
   };
-
-  // const fetchAllImages = async () => {
-  //   try {
-  //     setIsLoading(true);
-
-  //     const data = await getImage(searchQuery, page);
-  //     if (!data.hits.length) return;
-
-  //     setImages(prevImages => [...prevImages, ...data.hits]);
-  //     setTotalImages(data.totalHits);
-  //   } catch (error) {
-  //     setError(error.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  const openModal = imageUrl => {
-    setModal({
-      isModalOpen: true,
-      modalImageUrl: imageUrl,
-    });
-  };
-
-  const onCloseModal = () => {
-    setModal({
-      isModalOpen: false,
-      modalImageUrl: '',
-    });
-  };
-
-  const loadMore = () => {
-    setPage(prevPage => prevPage + 1);
-  };
-
-  const [prevSearchQuery, setPrevSearchQuery] = useState('');
-  const [prevPage, setPrevPage] = useState(1);
 
   useEffect(() => {
     const fetchAllImages = async () => {
@@ -86,7 +52,28 @@ export const App = () => {
     if (searchQuery !== prevSearchQuery || page !== prevPage) {
       fetchAllImages();
     }
+
+    setPrevSearchQuery(searchQuery);
+    setPrevPage(page);
   }, [searchQuery, page, prevSearchQuery, prevPage]);
+
+  const openModal = imageUrl => {
+    setModal({
+      isModalOpen: true,
+      modalImageUrl: imageUrl,
+    });
+  };
+
+  const onCloseModal = () => {
+    setModal({
+      isModalOpen: false,
+      modalImageUrl: '',
+    });
+  };
+
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
 
   return (
     <StyledAppContainer>
