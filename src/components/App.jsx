@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getImage } from 'services/api';
 
@@ -10,98 +10,86 @@ import { Button } from './Button/Button';
 
 import { StyledAppContainer } from './App.styled';
 
-export class App extends Component {
-  state = {
-    searchQuery: '',
-    images: [],
-    isLoading: false,
-    error: null,
-    page: 1,
-    totalImages: 0,
-    modal: {
-      isModalOpen: false,
-      modalImageUrl: '',
-    },
+export const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalImages, setTotalImages] = useState(0);
+  const [modal, setModal] = useState({
+    isModalOpen: false,
+    modalImageUrl: '',
+  });
+
+  const handleSearch = query => {
+    setSearchQuery(query);
+    setPage(1);
+    setImages([]);
+    setTotalImages(0);
   };
 
-  handleSearch = query => {
-    this.setState({
-      searchQuery: query,
-      page: 1,
-      images: [],
-      totalImages: 0,
-    });
-  };
-
-  fetchAllImages = async () => {
-    const { searchQuery, page } = this.state;
-
+  const fetchAllImages = async () => {
     try {
-      this.setState({ isLoading: true });
+      setIsLoading(true);
 
       const data = await getImage(searchQuery, page);
       if (!data.hits.length) return;
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        totalImages: data.totalHits,
-      }));
+      setImages(prevImages => [...prevImages, ...data.hits]);
+      setTotalImages(data.totalHits);
     } catch (error) {
-      this.setState({ error: error.message });
+      setError(error.message);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { searchQuery, page } = this.state;
-    if (searchQuery !== prevState.searchQuery || page !== prevState.page) {
-      this.fetchAllImages();
+  const openModal = imageUrl => {
+    setModal({
+      isModalOpen: true,
+      modalImageUrl: imageUrl,
+    });
+  };
+
+  const onCloseModal = () => {
+    setModal({
+      isModalOpen: false,
+      modalImageUrl: '',
+    });
+  };
+
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  const [prevSearchQuery, setPrevSearchQuery] = useState('');
+  const [prevPage, setPrevPage] = useState(1);
+
+  useEffect(() => {
+    if (searchQuery !== prevSearchQuery || page !== prevPage) {
+      setPrevSearchQuery(searchQuery);
+      setPrevPage(page);
+      fetchAllImages();
     }
-  }
+  }, [searchQuery, page]);
 
-  openModal = imageUrl => {
-    this.setState({
-      modal: {
-        isModalOpen: true,
-        modalImageUrl: imageUrl,
-      },
-    });
-  };
-
-  onCloseModal = () => {
-    this.setState({
-      modal: {
-        isModalOpen: false,
-        modalImageUrl: '',
-      },
-    });
-  };
-
-  loadMore = () => {
-    this.setState(prev => ({ page: prev.page + 1 }));
-  };
-
-  render() {
-    const { images, isLoading, error, modal, totalImages } = this.state;
-
-    return (
-      <StyledAppContainer>
-        <Searchbar onSearch={this.handleSearch} />
-        {images.length > 0 && (
-          <ImageGallery images={images} openModal={this.openModal} />
-        )}
-        <Modal
-          isOpen={modal.isModalOpen}
-          imageUrl={modal.modalImageUrl}
-          onCloseModal={this.onCloseModal}
-        />
-        {images.length !== totalImages && !isLoading && (
-          <Button onClick={this.loadMore} />
-        )}
-        {isLoading && <Loader />}
-        {error && <p>{error}</p>}
-      </StyledAppContainer>
-    );
-  }
-}
+  return (
+    <StyledAppContainer>
+      <Searchbar onSearch={handleSearch} />
+      {images.length > 0 && (
+        <ImageGallery images={images} openModal={openModal} />
+      )}
+      <Modal
+        isOpen={modal.isModalOpen}
+        imageUrl={modal.modalImageUrl}
+        onCloseModal={onCloseModal}
+      />
+      {images.length !== totalImages && !isLoading && (
+        <Button onClick={loadMore} />
+      )}
+      {isLoading && <Loader />}
+      {error && <p>{error}</p>}
+    </StyledAppContainer>
+  );
+};
