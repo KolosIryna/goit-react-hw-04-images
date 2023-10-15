@@ -29,21 +29,21 @@ export const App = () => {
     setTotalImages(0);
   };
 
-  const fetchAllImages = async () => {
-    try {
-      setIsLoading(true);
+  // const fetchAllImages = async () => {
+  //   try {
+  //     setIsLoading(true);
 
-      const data = await getImage(searchQuery, page);
-      if (!data.hits.length) return;
+  //     const data = await getImage(searchQuery, page);
+  //     if (!data.hits.length) return;
 
-      setImages(prevImages => [...prevImages, ...data.hits]);
-      setTotalImages(data.totalHits);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     setImages(prevImages => [...prevImages, ...data.hits]);
+  //     setTotalImages(data.totalHits);
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const openModal = imageUrl => {
     setModal({
@@ -67,12 +67,26 @@ export const App = () => {
   const [prevPage, setPrevPage] = useState(1);
 
   useEffect(() => {
+    const fetchAllImages = async () => {
+      try {
+        setIsLoading(true);
+
+        const data = await getImage(searchQuery, page);
+        if (!data.hits.length) return;
+
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setTotalImages(data.totalHits);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (searchQuery !== prevSearchQuery || page !== prevPage) {
-      setPrevSearchQuery(searchQuery);
-      setPrevPage(page);
       fetchAllImages();
     }
-  }, [searchQuery, page]);
+  }, [searchQuery, page, prevSearchQuery, prevPage]);
 
   return (
     <StyledAppContainer>

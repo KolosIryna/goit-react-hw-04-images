@@ -1,27 +1,20 @@
 import { useEffect } from 'react';
-
 import { StyledModal } from './Modal.styled';
 
 export const Modal = ({ isOpen, imageUrl, tags, onCloseModal }) => {
-  // componentDidMount() {
-  //   window.addEventListener('keydown', this.onKeyDown);
-  // }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener('keydown', this.onKeyDown);
-  // }
   useEffect(() => {
+    const onKeyDown = event => {
+      if (event.code === 'Escape' && isOpen) {
+        onCloseModal();
+      }
+    };
+
     window.addEventListener('keydown', onKeyDown);
+
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [onCloseModal]);
-
-  const onKeyDown = event => {
-    if (event.code === 'Escape' && isOpen) {
-      onCloseModal();
-    }
-  };
+  }, [isOpen, onCloseModal]);
 
   const onOverlayClick = event => {
     if (event.currentTarget === event.target) {
