@@ -22,9 +22,6 @@ export const App = () => {
     modalImageUrl: '',
   });
 
-  const [prevSearchQuery, setPrevSearchQuery] = useState('');
-  const [prevPage, setPrevPage] = useState(1);
-
   const handleSearch = query => {
     setSearchQuery(query);
     setPage(1);
@@ -33,6 +30,10 @@ export const App = () => {
   };
 
   useEffect(() => {
+    if (!searchQuery) {
+      return;
+    }
+
     const fetchAllImages = async () => {
       try {
         setIsLoading(true);
@@ -48,14 +49,8 @@ export const App = () => {
         setIsLoading(false);
       }
     };
-
-    if (searchQuery !== prevSearchQuery || page !== prevPage) {
-      fetchAllImages();
-    }
-
-    setPrevSearchQuery(searchQuery);
-    setPrevPage(page);
-  }, [searchQuery, page, prevSearchQuery, prevPage]);
+    fetchAllImages();
+  }, [searchQuery, page]);
 
   const openModal = imageUrl => {
     setModal({
